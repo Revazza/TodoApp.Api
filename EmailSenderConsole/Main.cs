@@ -34,6 +34,7 @@ using (var _context = new TodoAppDbContext(optionsBuilder.Options))
             {
                 var emailRequest = sendEmailRequests[i];
                 Console.WriteLine(emailRequest);
+                Console.WriteLine();
                 try
                 {
                     if (emailRequest.Status == EmailStatus.Failed)

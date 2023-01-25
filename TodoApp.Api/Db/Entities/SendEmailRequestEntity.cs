@@ -8,6 +8,7 @@
     public class SendEmailRequestEntity
     {
         public Guid Id { get; set; } = Guid.NewGuid();
+        public string? UserId { get; set; }
         public string? Subject { get; set; }
         public string? Body { get; set; }
         // user email address

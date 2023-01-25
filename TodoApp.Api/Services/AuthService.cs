@@ -11,7 +11,7 @@ namespace TodoApp.Api.Services
         Task RegisterAsync(RegisterUserRequest request);
         Task LoginAsync(LoginRequest request);
         Task ChangePasswordAsync(ChangePasswordRequest request);
-
+        Task ConfirmEmailAsync(string id, string token);
         Task SaveChangesAsync();
     }
     public class AuthService : IAuthService
@@ -31,6 +31,13 @@ namespace TodoApp.Api.Services
         public Task ChangePasswordAsync(ChangePasswordRequest request)
         {
             throw new NotImplementedException();
+        }
+
+        public Task ConfirmEmailAsync(string id, string token)
+        {
+
+            throw new NotImplementedException();
+
         }
 
         public Task LoginAsync(LoginRequest request)
@@ -61,14 +68,15 @@ namespace TodoApp.Api.Services
             }
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var url = $"https://localhost:7200/Authentication/confirm-email?token={token}";
+            var url = $"https://localhost:7200/Authentication/confirm-email?userId={newUser.Id}&token={token}";
 
             var sendEmailRequest = new SendEmailRequestEntity()
-            { 
+            {
                 Subject = "Email Confirmation",
                 Body = $"Please click link to confirm - {url}",
                 ToAddress = request.Email,
                 ConfirmationToken = token,
+                UserId = newUser.Id.ToString(),
             };
 
             await _context.SendEmailRequests.AddAsync(sendEmailRequest);
