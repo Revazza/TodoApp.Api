@@ -38,6 +38,7 @@ namespace TodoApp.Api.Services
 
             var user = await _userManager.FindByIdAsync(id);
 
+
             if (user == null)
             {
                 throw new ArgumentException("User doesn't exist");
