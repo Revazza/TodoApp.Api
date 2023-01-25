@@ -65,7 +65,7 @@ namespace TodoApp.Api.Services
 
             var sendEmailRequest = new SendEmailRequestEntity()
             { 
-                Title = "Email Confirmation",
+                Subject = "Email Confirmation",
                 Body = $"Please click link to confirm - {url}",
                 ToAddress = request.Email,
                 ConfirmationToken = token,

@@ -1,4 +1,5 @@
 using TodoApp.Api.Auth;
+using TodoApp.Api.Models;
 using TodoApp.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
