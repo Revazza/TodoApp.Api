@@ -33,10 +33,22 @@ namespace TodoApp.Api.Services
             throw new NotImplementedException();
         }
 
-        public Task ConfirmEmailAsync(string id, string token)
+        public async Task ConfirmEmailAsync(string id, string token)
         {
 
-            throw new NotImplementedException();
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                throw new ArgumentException("User doesn't exist");
+            }
+
+            var response = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (!response.Succeeded)
+            {
+                throw new Exception(response.Errors.First().Description);
+            }
 
         }
 

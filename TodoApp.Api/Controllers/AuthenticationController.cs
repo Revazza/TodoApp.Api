@@ -41,9 +41,17 @@ namespace TodoApp.Api.Controllers
         [HttpPost("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string userId,string token)
         {
+            try
+            {
+                await _authService.ConfirmEmailAsync(userId, token);
+                await _authService.SaveChangesAsync();
+                return Ok("Email Confirmed!");
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
 
-
-            return Ok();
         }
 
 

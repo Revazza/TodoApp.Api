@@ -32,7 +32,7 @@ namespace TodoApp.Api.Auth
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
                 ValidIssuer = issuer,
                 ValidAudience = audience,
-
+                
             };
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

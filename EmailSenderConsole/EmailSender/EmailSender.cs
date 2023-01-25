@@ -34,8 +34,7 @@ namespace EmailSenderConsole.EmailSender
 
             var client = new SmtpClient("smtp.gmail.com", 587)
             {
-                //
-                Credentials = new NetworkCredential(_appSettings.CompanyEmail, "email password"),
+                Credentials = new NetworkCredential(_appSettings.CompanyEmail, "juqkyhbvcoxmoakm"),
                 EnableSsl = true,
             };
             try
