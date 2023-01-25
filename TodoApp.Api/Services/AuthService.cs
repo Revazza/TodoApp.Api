@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Runtime.InteropServices;
 using TodoApp.Api.Db;
 using TodoApp.Api.Db.Entities;
 using TodoApp.Api.Models.Requests;
@@ -10,6 +11,8 @@ namespace TodoApp.Api.Services
         Task RegisterAsync(RegisterUserRequest request);
         Task LoginAsync(LoginRequest request);
         Task ChangePasswordAsync(ChangePasswordRequest request);
+
+        Task SaveChangesAsync();
     }
     public class AuthService : IAuthService
     {
@@ -35,9 +38,46 @@ namespace TodoApp.Api.Services
             throw new NotImplementedException();
         }
 
-        public Task RegisterAsync(RegisterUserRequest request)
+        public async Task RegisterAsync(RegisterUserRequest request)
         {
-            throw new NotImplementedException();
+            var user = await _userManager.FindByEmailAsync(request.Email!);
+
+            if (user != null)
+            {
+                throw new ArgumentException("Email already registered");
+            }
+
+            var newUser = new UserEntity()
+            {
+                UserName = request.UserName,
+                Email = request.Email,
+            };
+
+            var response = await _userManager.CreateAsync(newUser, request.Password!);
+
+            if (!response.Succeeded)
+            {
+                throw new Exception(response.Errors.First().Description);
+            }
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+            var url = $"https://localhost:7200/Authentication/confirm-email?token={token}";
+
+            var sendEmailRequest = new SendEmailRequestEntity()
+            { 
+                Title = "Email Confirmation",
+                Body = $"Please click link to confirm - {url}",
+                ToAddress = request.Email,
+                ConfirmationToken = token,
+            };
+
+            await _context.SendEmailRequests.AddAsync(sendEmailRequest);
+
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

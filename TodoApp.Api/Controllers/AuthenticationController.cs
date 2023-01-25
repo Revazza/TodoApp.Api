@@ -19,13 +19,33 @@ namespace TodoApp.Api.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(RegisterUserRequest request)
         {
 
-            _authService.LoginAsync(new LoginRequest());
+            try
+            {
+                await _authService.RegisterAsync(request);
+                await _authService.SaveChangesAsync();
+
+                return Ok($"Confirmation link was sent to your gmail {request.Email}");
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+
+        }
+
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string token)
+        {
+
 
             return Ok();
         }
+
+
     }
 }

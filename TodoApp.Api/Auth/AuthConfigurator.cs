@@ -65,6 +65,7 @@ namespace TodoApp.Api.Auth
                     o.Password.RequireUppercase = false;
                     o.Password.RequireNonAlphanumeric = false;
                     o.Password.RequiredLength = 1;
+                    o.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<TodoAppDbContext>()
                 .AddDefaultTokenProviders();
