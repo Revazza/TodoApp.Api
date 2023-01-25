@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Runtime.InteropServices;
+using System.Web;
 using TodoApp.Api.Db;
 using TodoApp.Api.Db.Entities;
 using TodoApp.Api.Models.Requests;
@@ -44,6 +45,11 @@ namespace TodoApp.Api.Services
                 throw new ArgumentException("User doesn't exist");
             }
 
+            if(user.EmailConfirmed)
+            {
+                throw new Exception("Email already confirmed");
+            }
+
             var response = await _userManager.ConfirmEmailAsync(user, token);
 
             if (!response.Succeeded)
@@ -81,7 +87,9 @@ namespace TodoApp.Api.Services
             }
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var url = $"https://localhost:7200/Authentication/confirm-email?userId={newUser.Id}&token={token}";
+            var encodedToken = HttpUtility.UrlEncode(token);
+
+            var url = $"https://localhost:7200/Authentication/confirm-email?userId={newUser.Id}&token={encodedToken}";
 
             var sendEmailRequest = new SendEmailRequestEntity()
             {
