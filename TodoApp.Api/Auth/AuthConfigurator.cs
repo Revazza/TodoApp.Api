@@ -30,6 +30,8 @@ namespace TodoApp.Api.Auth
                 ValidateIssuer = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                ValidIssuer = issuer,
+                ValidAudience = audience,
 
             };
 

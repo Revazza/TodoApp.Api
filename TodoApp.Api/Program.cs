@@ -1,4 +1,5 @@
 using TodoApp.Api.Auth;
+using TodoApp.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,7 @@ builder.Services.AddSwaggerGen();
 
 AuthConfigurator.Configure(builder);
 
+builder.Services.AddTransient<IAuthService, AuthService>();
 
 var app = builder.Build();
 
