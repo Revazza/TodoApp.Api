@@ -7,6 +7,7 @@ using TodoApp.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -25,10 +26,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 var seeder = new Seeder(app);
 await seeder.SeedRoles();

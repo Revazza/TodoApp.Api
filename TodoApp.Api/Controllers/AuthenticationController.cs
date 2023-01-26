@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TodoApp.Api.Models.Requests;
 using TodoApp.Api.Services;
@@ -57,7 +58,8 @@ namespace TodoApp.Api.Controllers
 
         }
 
-        [HttpPost("confirm-email")]
+
+        [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             try

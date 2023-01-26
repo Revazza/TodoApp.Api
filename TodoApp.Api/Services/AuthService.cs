@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Identity;
 using System.Runtime.InteropServices;
 using System.Web;
 using TodoApp.Api.Auth;
@@ -48,7 +49,7 @@ namespace TodoApp.Api.Services
                 throw new ArgumentException("User doesn't exist");
             }
 
-            if(user.EmailConfirmed)
+            if (user.EmailConfirmed)
             {
                 throw new Exception("Email already confirmed");
             }
@@ -64,12 +65,13 @@ namespace TodoApp.Api.Services
         public async Task<string> LoginAsync(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email!);
-            if(user == null)
+            if (user == null)
             {
                 throw new ArgumentException("Incorrect Credentials");
             }
 
-            var isPasswordCorrect = await _userManager.CheckPasswordAsync(user,request.Password!);
+
+            var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, request.Password!);
 
             if (!isPasswordCorrect)
             {
@@ -78,7 +80,7 @@ namespace TodoApp.Api.Services
 
             var userClaims = await _userManager.GetClaimsAsync(user);
 
-            var jwtToken = _generator.GenerateToken(user,userClaims.ToList());
+            var jwtToken = _generator.GenerateToken(user, userClaims.ToList());
 
             return jwtToken;
         }
@@ -104,16 +106,17 @@ namespace TodoApp.Api.Services
                 throw new Exception(response.Errors.First().Description);
             }
 
+            await _userManager.AddToRoleAsync(newUser, request.Role!);
+
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
             var encodedToken = HttpUtility.UrlEncode(token);
-
             var url = $"https://localhost:7200/Authentication/confirm-email?userId={newUser.Id}&token={encodedToken}";
 
             var sendEmailRequest = new SendEmailRequestEntity()
             {
                 Subject = "Email Confirmation",
                 Body = $"Please click link to confirm - {url}",
-                ToAddress = request.Email,
+                ToAddress = newUser.Email,
                 ConfirmationToken = token,
                 UserId = newUser.Id.ToString(),
             };
@@ -125,5 +128,7 @@ namespace TodoApp.Api.Services
         {
             await _context.SaveChangesAsync();
         }
+
+
     }
 }
