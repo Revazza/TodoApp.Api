@@ -13,6 +13,7 @@ namespace TodoApp.Api.Db
         public TodoAppDbContext(DbContextOptions<TodoAppDbContext> options) : base(options)
         {
 
+
         }
 
     }

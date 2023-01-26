@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Runtime.InteropServices;
 using System.Web;
+using TodoApp.Api.Auth;
 using TodoApp.Api.Db;
 using TodoApp.Api.Db.Entities;
 using TodoApp.Api.Models.Requests;
@@ -10,7 +11,7 @@ namespace TodoApp.Api.Services
     public interface IAuthService
     {
         Task RegisterAsync(RegisterUserRequest request);
-        Task LoginAsync(LoginRequest request);
+        Task<string> LoginAsync(LoginRequest request);
         Task ChangePasswordAsync(ChangePasswordRequest request);
         Task ConfirmEmailAsync(string id, string token);
         Task SaveChangesAsync();
@@ -19,21 +20,23 @@ namespace TodoApp.Api.Services
     {
         private readonly UserManager<UserEntity> _userManager;
         private readonly TodoAppDbContext _context;
+        private readonly TokenGenerator _generator;
 
         public AuthService(
             UserManager<UserEntity> userManager,
-            TodoAppDbContext context
+            TodoAppDbContext context,
+            TokenGenerator generator
             )
         {
             _userManager = userManager;
             _context = context;
+            _generator = generator;
         }
 
         public Task ChangePasswordAsync(ChangePasswordRequest request)
         {
             throw new NotImplementedException();
         }
-
         public async Task ConfirmEmailAsync(string id, string token)
         {
 
@@ -58,12 +61,27 @@ namespace TodoApp.Api.Services
             }
 
         }
-
-        public Task LoginAsync(LoginRequest request)
+        public async Task<string> LoginAsync(LoginRequest request)
         {
-            throw new NotImplementedException();
-        }
+            var user = await _userManager.FindByEmailAsync(request.Email!);
+            if(user == null)
+            {
+                throw new ArgumentException("Incorrect Credentials");
+            }
 
+            var isPasswordCorrect = await _userManager.CheckPasswordAsync(user,request.Password!);
+
+            if (!isPasswordCorrect)
+            {
+                throw new ArgumentException("Incorrect Credentials");
+            }
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+
+            var jwtToken = _generator.GenerateToken(user,userClaims.ToList());
+
+            return jwtToken;
+        }
         public async Task RegisterAsync(RegisterUserRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email!);
@@ -103,7 +121,6 @@ namespace TodoApp.Api.Services
             await _context.SendEmailRequests.AddAsync(sendEmailRequest);
 
         }
-
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

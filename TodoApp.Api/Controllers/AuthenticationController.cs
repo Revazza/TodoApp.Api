@@ -18,6 +18,25 @@ namespace TodoApp.Api.Controllers
             _authService = authService;
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequest request)
+        {
+
+            //TODO:
+            //      Notify user to activate account by clicking link at gmail
+            try
+            {
+
+                var token = await _authService.LoginAsync(request);
+
+                return Ok(token);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+        }
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(RegisterUserRequest request)
@@ -39,7 +58,7 @@ namespace TodoApp.Api.Controllers
         }
 
         [HttpPost("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail(string userId,string token)
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             try
             {

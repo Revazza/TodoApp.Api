@@ -44,12 +44,12 @@ namespace TodoApp.Api.Auth
 
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("user",policy =>
+                options.AddPolicy("ApiUser",policy =>
                 {
                     policy.RequireAuthenticatedUser();
                     policy.RequireRole("user");
                 });
-                options.AddPolicy("admin", policy =>
+                options.AddPolicy("ApiAdmin", policy =>
                 {
                     policy.RequireAuthenticatedUser();
                     policy.RequireRole("admin");
