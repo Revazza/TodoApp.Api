@@ -1,27 +1,28 @@
-﻿namespace TodoApp.Api.Db.Entities
+﻿namespace TodoApp.Api.Db.RequestEntities
 {
-    public enum EmailStatus
+    public enum RequestStatus
     {
         NotSent,
         Failed,
+        Sent,
     }
-    public class SendEmailRequestEntity
+    public class BaseRequestEntity
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public string? UserId { get; set; }
         public string? Subject { get; set; }
         public string? Body { get; set; }
         // user email address
         public string? ToAddress { get; set; }
-        public string? ConfirmationToken { get; set; }
-        public EmailStatus Status { get; set; } = EmailStatus.NotSent;
+        public RequestStatus Status { get; set; } = RequestStatus.NotSent;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
 
         public override string? ToString()
         {
             return $"User Email:{ToAddress}\n" +
                     $"Subject:{Subject}\n" +
                     $"Body:{Body}\n" +
-                    $"Status:{Status}\n";
+                    $"Status:{Status}\n" + "\n";
         }
     }
 }

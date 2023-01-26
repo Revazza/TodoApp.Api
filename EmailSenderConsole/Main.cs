@@ -1,79 +1,44 @@
 ﻿using EmailSenderConsole;
 using EmailSenderConsole.EmailSender;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Specialized;
-using System.Net.Mail;
 using TodoApp.Api.Db;
-using TodoApp.Api.Db.Entities;
+using TodoApp.Api.Db.RequestEntities;
+using TodoApp.Api.Models.Requests;
 
 var appSettings = new AppSettings();
 var optionsBuilder = new DbContextOptionsBuilder<TodoAppDbContext>();
 optionsBuilder.UseSqlServer(appSettings.DatabaseConnectionString);
 
 
-
 using (var _context = new TodoAppDbContext(optionsBuilder.Options))
 {
-
     var emailSender = new EmailSender(appSettings);
-
-    // Counts errors for specific email address
-    var errorCounter = 0;
 
     while (true)
     {
-        var sendEmailRequests = _context.SendEmailRequests.ToList();
+        var emailRequests = _context.SendEmailRequests.ToList();
+        var resetPasswordRequests = _context.SendResetPasswordRequests.ToList();
 
-        if (sendEmailRequests.Count == 0)
+        var requests = new List<BaseRequestEntity>();
+        requests.AddRange(emailRequests);
+        requests.AddRange(resetPasswordRequests);
+
+        var deprecatedRequests = emailSender.SendEmailRequests(requests);
+
+        foreach (var request in deprecatedRequests)
         {
-            Console.WriteLine("No emails to send");
-        }
-        else
-        {
-            for (int i = 0; i < sendEmailRequests.Count; i++)
+            if (request is SendEmailRequestEntity)
             {
-                var emailRequest = sendEmailRequests[i];
-                Console.WriteLine(emailRequest);
-                Console.WriteLine();
-                try
-                {
-                    if (emailRequest.Status == EmailStatus.Failed)
-                    {
-                        continue;
-                    }
-
-                    emailSender.SendEmail(emailRequest);
-
-                    _context.SendEmailRequests.Remove(emailRequest);
-                    await _context.SaveChangesAsync();
-                }
-                catch (SmtpException e)
-                {
-                    errorCounter++;
-                    //looping till we send email
-                    i--;
-
-                    // Checking if email sent failed 3 times in a row
-                    if (errorCounter == 3)
-                    {
-                        errorCounter = 0;
-                        emailRequest.Status = EmailStatus.Failed;
-                        Console.WriteLine($"{emailRequest.ToAddress} status changed to ,,Failed''");
-                        await _context.SaveChangesAsync();
-                        continue;
-                    }
-
-                    Console.WriteLine($"Error Occured while sending message to email: {emailRequest.ToAddress}");
-                    Console.WriteLine($"Error Description: " + e.Message);
-                    Console.WriteLine();
-                    Thread.Sleep(5000);
-                }
+                _context.SendEmailRequests.Remove(request as SendEmailRequestEntity);
             }
+            else if (request is SendResetPasswordRequestEntity)
+            {
+                _context.SendResetPasswordRequests.Remove(request as SendResetPasswordRequestEntity);
+            }
+            Console.WriteLine($"Request with id - {request.Id} removed");
         }
 
-
-        Thread.Sleep(5000);
-
+        await _context.SaveChangesAsync();
     }
 
 
