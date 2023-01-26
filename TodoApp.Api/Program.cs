@@ -16,7 +16,7 @@ AuthConfigurator.Configure(builder);
 
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<TokenGenerator>();
-
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

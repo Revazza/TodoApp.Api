@@ -1,4 +1,5 @@
-﻿using TodoApp.Api.Db.Entities;
+﻿using Microsoft.AspNetCore.Identity;
+using TodoApp.Api.Db.Entities;
 using TodoApp.Api.Models.Requests;
 
 namespace TodoApp.Api.Services
@@ -9,7 +10,18 @@ namespace TodoApp.Api.Services
 
     }
 
-    public class TodoService
+    public class TodoService : ITodoService
     {
+        private readonly UserManager<UserEntity> _userManager;
+
+        public TodoService(UserManager<UserEntity> userManager)
+        {
+            _userManager = userManager;
+        }
+
+        public Task<TodoEntity> CreateTodo(CreateTodoRequest request)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using TodoApp.Api.Models.Requests;
 using TodoApp.Api.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using TodoApp.Api.Auth;
 
 namespace TodoApp.Api.Controllers
 {
@@ -11,12 +14,15 @@ namespace TodoApp.Api.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly TokenGenerator _tokenGenerator;
 
         public AuthenticationController(
-            IAuthService authService
+            IAuthService authService,
+            TokenGenerator tokenGenerator
             )
         {
             _authService = authService;
+            _tokenGenerator = tokenGenerator;
         }
 
         [HttpPost("login")]
@@ -26,8 +32,8 @@ namespace TodoApp.Api.Controllers
             //      Notify user to activate account by clicking link at gmail
             try
             {
-
-                var token = await _authService.LoginAsync(request);
+                var claims = await _authService.LoginAsync(request);
+                var token = _tokenGenerator.GenerateToken(claims.ToList());
 
                 return Ok(token);
             }

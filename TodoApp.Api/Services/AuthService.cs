@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
 using System.Web;
 using TodoApp.Api.Auth;
 using TodoApp.Api.Db;
@@ -15,7 +16,7 @@ namespace TodoApp.Api.Services
     public interface IAuthService
     {
         Task RegisterAsync(RegisterUserRequest request);
-        Task<string> LoginAsync(LoginRequest request);
+        Task<IList<Claim>> LoginAsync(LoginRequest request);
         Task ResetPasswordAsync(string userId, string token);
         Task ResetPasswordRequestAsync(ResetPasswordRequest request);
         Task ConfirmEmailAsync(string id, string token);
@@ -26,17 +27,14 @@ namespace TodoApp.Api.Services
         private const string URL = "https://localhost:7200";
         private readonly UserManager<UserEntity> _userManager;
         private readonly TodoAppDbContext _context;
-        private readonly TokenGenerator _generator;
 
         public AuthService(
             UserManager<UserEntity> userManager,
-            TodoAppDbContext context,
-            TokenGenerator generator
+            TodoAppDbContext context
             )
         {
             _userManager = userManager;
             _context = context;
-            _generator = generator;
         }
 
         public async Task ResetPasswordRequestAsync(ResetPasswordRequest request)
@@ -66,8 +64,6 @@ namespace TodoApp.Api.Services
             await _context.SendResetPasswordRequests.AddAsync(resetPasswordRequest);
 
         }
-
-
         public async Task ConfirmEmailAsync(string id, string token)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -89,14 +85,14 @@ namespace TodoApp.Api.Services
                 throw new Exception(response.Errors.First().Description);
             }
         }
-        public async Task<string> LoginAsync(LoginRequest request)
+        public async Task<IList<Claim>> LoginAsync(LoginRequest request)
         {
+
             var user = await _userManager.FindByEmailAsync(request.Email!);
             if (user == null)
             {
                 throw new ArgumentException("Incorrect Credentials");
             }
-
 
             var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, request.Password!);
 
@@ -107,9 +103,13 @@ namespace TodoApp.Api.Services
 
             var userClaims = await _userManager.GetClaimsAsync(user);
 
-            var jwtToken = _generator.GenerateToken(user, userClaims.ToList());
+            // user can only have 1 role
+            var userRole = (await _userManager.GetRolesAsync(user)).First();
+            userClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            userClaims.Add(new Claim(ClaimTypes.Email, user.Email!));
 
-            return jwtToken;
+
+            return userClaims;
         }
         public async Task RegisterAsync(RegisterUserRequest request)
         {
@@ -154,7 +154,6 @@ namespace TodoApp.Api.Services
         {
             await _context.SaveChangesAsync();
         }
-
         public async Task ResetPasswordAsync(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -167,7 +166,7 @@ namespace TodoApp.Api.Services
 
             var resetPasswordRequest = await _context.SendResetPasswordRequests
                 .FirstOrDefaultAsync(p => p.UserId == userId);
-            if(resetPasswordRequest == null)
+            if (resetPasswordRequest == null)
             {
                 throw new ArgumentException("Reset time deprecated, try again");
             }
