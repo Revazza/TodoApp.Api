@@ -72,11 +72,11 @@ namespace TodoApp.Api.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        public async Task<IActionResult> ResetPasswordRequest(ResetPasswordRequest request)
         {
             try
             {
-                await _authService.ResetPasswordAsync(request);
+                await _authService.ResetPasswordRequestAsync(request);
                 await _authService.SaveChangesAsync();
                 return Ok("Check mail");
             }
@@ -88,9 +88,18 @@ namespace TodoApp.Api.Controllers
         }
 
         [HttpGet("reset-password")]
-        public async Task<IActionResult> ResetPassword(string userId,string token)
+        public async Task<IActionResult> ResetPassword(string userId, string token)
         {
+            try
+            {
+                await _authService.ResetPasswordAsync(userId, token);
+                await _authService.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
 
+                return BadRequest(e.Message);
+            }
 
             return Ok("Everything's cool");
         }

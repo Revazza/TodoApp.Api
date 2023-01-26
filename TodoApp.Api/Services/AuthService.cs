@@ -1,5 +1,7 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using System.Runtime.InteropServices;
 using System.Web;
 using TodoApp.Api.Auth;
@@ -14,7 +16,8 @@ namespace TodoApp.Api.Services
     {
         Task RegisterAsync(RegisterUserRequest request);
         Task<string> LoginAsync(LoginRequest request);
-        Task ResetPasswordAsync(ResetPasswordRequest request);
+        Task ResetPasswordAsync(string userId, string token);
+        Task ResetPasswordRequestAsync(ResetPasswordRequest request);
         Task ConfirmEmailAsync(string id, string token);
         Task SaveChangesAsync();
     }
@@ -36,7 +39,7 @@ namespace TodoApp.Api.Services
             _generator = generator;
         }
 
-        public async Task ResetPasswordAsync(ResetPasswordRequest request)
+        public async Task ResetPasswordRequestAsync(ResetPasswordRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email!);
 
@@ -63,6 +66,8 @@ namespace TodoApp.Api.Services
             await _context.SendResetPasswordRequests.AddAsync(resetPasswordRequest);
 
         }
+
+
         public async Task ConfirmEmailAsync(string id, string token)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -150,6 +155,29 @@ namespace TodoApp.Api.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task ResetPasswordAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
 
+
+            if (user == null)
+            {
+                throw new ArgumentException("User doesn't exist");
+            }
+
+            var resetPasswordRequest = await _context.SendResetPasswordRequests
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if(resetPasswordRequest == null)
+            {
+                throw new ArgumentException("Reset time deprecated, try again");
+            }
+
+            var currentUserPassword = await _userManager.ResetPasswordAsync(user, token, resetPasswordRequest.NewPassword!);
+
+            var userRequests = _context.SendResetPasswordRequests.Where(r => r.UserId == userId);
+            _context.SendResetPasswordRequests.RemoveRange(userRequests);
+
+            Console.WriteLine();
+        }
     }
 }

@@ -36,7 +36,7 @@ namespace EmailSenderConsole.EmailSender
 
             var client = new SmtpClient("smtp.gmail.com", 587)
             {
-                Credentials = new NetworkCredential(_appSettings.CompanyEmail, "hjxzxpocutxmpcus"),
+                Credentials = new NetworkCredential(_appSettings.CompanyEmail, "zvjbudmbxuapcbge"),
                 EnableSsl = true,
             };
             try
@@ -62,9 +62,12 @@ namespace EmailSenderConsole.EmailSender
                 var request = requests[i];
                 try
                 {
-                    if (request.CreatedAt.AddMinutes(15) < DateTime.UtcNow)
+                    if (
+                        request.CreatedAt.AddMinutes(15) < DateTime.UtcNow ||
+                        (request is SendEmailRequestEntity && request.Status == RequestStatus.Sent))
                     {
                         deprecatedRequests.Add(request);
+                        continue;
                     }
                     else if (request.Status != RequestStatus.Sent && request.Status != RequestStatus.Failed)
                     {
