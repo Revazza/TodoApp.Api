@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using TodoApp.Api.Auth;
 using TodoApp.Api.Db.Entities;
 using TodoApp.Api.Models;
+using TodoApp.Api.Repositories;
 using TodoApp.Api.Seed;
 using TodoApp.Api.Services;
 
@@ -16,7 +17,7 @@ AuthConfigurator.Configure(builder);
 
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<TokenGenerator>();
-builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITodoRepository,TodoRepository>();
 
 var app = builder.Build();
 

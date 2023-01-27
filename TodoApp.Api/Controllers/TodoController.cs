@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Mvc;
 using TodoApp.Api.Models.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using TodoApp.Api.Db.Entities;
-using Microsoft.AspNetCore.Authorization;
+using TodoApp.Api.Repositories;
 
 namespace TodoApp.Api.Controllers
 {
@@ -14,16 +11,36 @@ namespace TodoApp.Api.Controllers
     [ApiController]
     public class TodoController : ControllerBase
     {
+        private readonly UserManager<UserEntity> _userManager;
+        private readonly ITodoRepository _todoRepository;
+
+        public TodoController(
+            UserManager<UserEntity> userManager,
+            ITodoRepository todoRepository)
+        {
+            _userManager = userManager;
+            _todoRepository = todoRepository;
+        }
+
+
 
         [Authorize("ApiUser", AuthenticationSchemes = "Bearer")]
         [HttpPost("add-todo")]
         public async Task<IActionResult> CreateTodo(CreateTodoRequest request)
         {
-            var claimsPrincipal = User;
+            var user = await _userManager.GetUserAsync(User);
 
-            
+            if (user == null)
+            {
+                return BadRequest("Can't identify user");
+            }
 
-            return Ok();
+            var newTodo = await _todoRepository.CreateTodoAsync(user.Id, request);
+
+            await _todoRepository.SaveChangesAsync();
+
+
+            return Created($"Todos/{newTodo.Id}", newTodo);
         }
 
 

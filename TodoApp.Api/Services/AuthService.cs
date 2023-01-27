@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Web;
@@ -107,6 +108,7 @@ namespace TodoApp.Api.Services
             var userRole = (await _userManager.GetRolesAsync(user)).First();
             userClaims.Add(new Claim(ClaimTypes.Role, userRole));
             userClaims.Add(new Claim(ClaimTypes.Email, user.Email!));
+            userClaims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()));
 
 
             return userClaims;
