@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using TodoApp.Api.Db;
 using TodoApp.Api.Db.Entities;
+using TodoApp.Api.Models.Dtos;
 using TodoApp.Api.Models.Requests;
 
 namespace TodoApp.Api.Repositories
@@ -10,7 +12,7 @@ namespace TodoApp.Api.Repositories
         Task<TodoEntity> CreateTodoAsync(Guid userId, CreateTodoRequest request);
         Task SaveChangesAsync();
         Task<List<TodoEntity>> GetAllTodo(Guid userId);
-        Task<List<TodoEntity>> SearchTodo(Guid userId, SearchTodoRequest request);
+        Task<List<TodoEntity>> SearchTodo(Guid userId, SearchTodoDto queries);
     }
 
     public class TodoRepository : ITodoRepository
@@ -44,11 +46,26 @@ namespace TodoApp.Api.Repositories
                 .Where(t => t.CreatorId == userId)
                 .ToListAsync();
         }
-        public Task<List<TodoEntity>> SearchTodo(Guid userId, SearchTodoRequest request)
+        public async Task<List<TodoEntity>> SearchTodo(Guid userId, SearchTodoDto queries)
         {
+            var todos = _context.Todos as IQueryable<TodoEntity>;
 
+            todos = todos.Where(t => t.CreatorId == userId);
 
-            return null;
+            if (!string.IsNullOrEmpty(queries.Name))
+            {
+                todos = todos.Where(t => t.Name!.ToLower().Contains(queries.Name.ToLower()));
+            }
+            if (!string.IsNullOrEmpty(queries.Description))
+            {
+                todos = todos.Where(t => t.Description!.ToLower().Contains(queries.Description.ToLower()));
+            }
+            if (queries.Status != Status.None)
+            {
+                todos = todos.Where(t => t.Status == queries.Status);
+            }
+
+            return await todos.ToListAsync();
         }
         public async Task SaveChangesAsync()
         {

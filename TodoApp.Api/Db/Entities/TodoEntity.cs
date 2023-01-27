@@ -7,6 +7,7 @@ namespace TodoApp.Api.Db.Entities
         InProcess = 0,
         Completed,
         Deleted,
+        None
 
     }
 

@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using TodoApp.Api.Db.Entities;
 using TodoApp.Api.Repositories;
+using TodoApp.Api.Models.Dtos;
 
 namespace TodoApp.Api.Controllers
 {
+    [Authorize("ApiUser", AuthenticationSchemes = "Bearer")]
     [Route("Todo")]
     [ApiController]
     public class TodoController : ControllerBase
@@ -23,8 +25,6 @@ namespace TodoApp.Api.Controllers
         }
 
 
-
-        [Authorize("ApiUser", AuthenticationSchemes = "Bearer")]
         [HttpPost("add-todo")]
         public async Task<IActionResult> CreateTodo(CreateTodoRequest request)
         {
@@ -43,6 +43,31 @@ namespace TodoApp.Api.Controllers
             return Created($"Todos/{newTodo.Id}", newTodo);
         }
 
+        [HttpGet("{userId}")]
+        public async Task<IEnumerable<TodoEntity>> GetAllUserTodo(Guid userId)
+        {
+            return await _todoRepository.GetAllTodo(userId);
+        }
+
+        [HttpGet("search-todo")]
+        public async Task<IEnumerable<TodoEntity>> SearchTodo(
+            Guid userId,
+            string? name,
+            string? description,
+            Status status
+            )
+        {
+            var queries = new SearchTodoDto()
+            {
+                Status = status,
+                Description = description,
+                Name = name,
+            };
+
+
+
+            return await _todoRepository.SearchTodo(userId, queries); ;
+        }
 
     }
 }
