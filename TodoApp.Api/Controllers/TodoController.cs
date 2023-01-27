@@ -46,7 +46,7 @@ namespace TodoApp.Api.Controllers
         [HttpGet("{userId}")]
         public async Task<IEnumerable<TodoEntity>> GetAllUserTodo(Guid userId)
         {
-            return await _todoRepository.GetAllTodo(userId);
+            return await _todoRepository.GetAllTodoAsync(userId);
         }
 
         [HttpGet("search-todo")]
@@ -66,7 +66,18 @@ namespace TodoApp.Api.Controllers
 
 
 
-            return await _todoRepository.SearchTodo(userId, queries); ;
+            return await _todoRepository.SearchTodoAsync(userId, queries); ;
+        }
+
+
+        [HttpDelete("{todoId}")]
+        public async Task<IActionResult> DeleteTodo(Guid todoId)
+        {
+
+            await _todoRepository.DeleteTodoAsync(todoId);
+
+            await _todoRepository.SaveChangesAsync();
+            return Ok("Todo deleted");
         }
 
     }

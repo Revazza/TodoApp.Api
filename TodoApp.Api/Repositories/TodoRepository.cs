@@ -11,8 +11,9 @@ namespace TodoApp.Api.Repositories
     {
         Task<TodoEntity> CreateTodoAsync(Guid userId, CreateTodoRequest request);
         Task SaveChangesAsync();
-        Task<List<TodoEntity>> GetAllTodo(Guid userId);
-        Task<List<TodoEntity>> SearchTodo(Guid userId, SearchTodoDto queries);
+        Task<List<TodoEntity>> GetAllTodoAsync(Guid userId);
+        Task<List<TodoEntity>> SearchTodoAsync(Guid userId, SearchTodoDto queries);
+        Task DeleteTodoAsync(Guid todoId);
     }
 
     public class TodoRepository : ITodoRepository
@@ -40,13 +41,13 @@ namespace TodoApp.Api.Repositories
             return todo;
         }
 
-        public async Task<List<TodoEntity>> GetAllTodo(Guid userId)
+        public async Task<List<TodoEntity>> GetAllTodoAsync(Guid userId)
         {
             return await _context.Todos
                 .Where(t => t.CreatorId == userId)
                 .ToListAsync();
         }
-        public async Task<List<TodoEntity>> SearchTodo(Guid userId, SearchTodoDto queries)
+        public async Task<List<TodoEntity>> SearchTodoAsync(Guid userId, SearchTodoDto queries)
         {
             var todos = _context.Todos as IQueryable<TodoEntity>;
 
@@ -67,11 +68,21 @@ namespace TodoApp.Api.Repositories
 
             return await todos.ToListAsync();
         }
+        public async Task DeleteTodoAsync(Guid todoId)
+        {
+            var todo = await _context.Todos.FirstOrDefaultAsync(t => t.Id == todoId);
+
+            if (todo != null)
+            {
+                _context.Remove(todo);
+            }
+
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
-
 
     }
 }
