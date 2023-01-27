@@ -14,6 +14,7 @@ namespace TodoApp.Api.Repositories
         Task<List<TodoEntity>> GetAllTodoAsync(Guid userId);
         Task<List<TodoEntity>> SearchTodoAsync(Guid userId, SearchTodoDto queries);
         Task DeleteTodoAsync(Guid todoId);
+        Task<TodoEntity> UpdateTodoAsync(UpdateTodoDto parameters);
     }
 
     public class TodoRepository : ITodoRepository
@@ -78,11 +79,42 @@ namespace TodoApp.Api.Repositories
             }
 
         }
+        public async Task<TodoEntity> UpdateTodoAsync(UpdateTodoDto parameters)
+        {
+            var todo = await _context.Todos.FirstOrDefaultAsync(t => t.Id == parameters.TodoId);
+
+            if (todo == null)
+            {
+                throw new ArgumentException("Todo doesn't exist");
+            }
+
+            if (!string.IsNullOrEmpty(parameters.Name))
+            {
+                todo.Name = parameters.Name;
+            }
+            if (!string.IsNullOrEmpty(parameters.Description))
+            {
+                todo.Description = parameters.Description;
+            }
+            if (parameters.Status != Status.None)
+            {
+                todo.Status = parameters.Status;
+            }
+            if (parameters.Deadline != DateTime.MinValue)
+            {
+                todo.Deadline = parameters.Deadline;
+            }
+
+            _context.Todos.Update(todo);
+
+            return todo;
+        }
 
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
+
 
     }
 }

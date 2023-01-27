@@ -75,9 +75,26 @@ namespace TodoApp.Api.Controllers
         {
 
             await _todoRepository.DeleteTodoAsync(todoId);
-
             await _todoRepository.SaveChangesAsync();
             return Ok("Todo deleted");
+        }
+
+        [HttpPost("update-todo")]
+        public async Task<IActionResult> UpdateTodo(UpdateTodoDto parameters)
+        {
+            try
+            {
+                var updatedTodo = await _todoRepository.UpdateTodoAsync(parameters);
+                await _todoRepository.SaveChangesAsync();
+
+                return Ok(updatedTodo);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+
         }
 
     }
